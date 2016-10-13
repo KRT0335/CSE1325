@@ -12,12 +12,12 @@
 //Test the cout for the parts name
 void FullModel::print(int index) {
 	cout << component.parts_to_string(index) << endl;
-	cout << component.get_torso_name(index) << endl;
-	cout << component.get_head_name(index) << endl;
-	cout << component.get_arm_name(index) << endl;
-	cout << component.get_arm1_name(index) << endl;
-	cout << component.get_locomotor_name(index) << endl;
-	cout << component.get_battery_name(index) << endl;
+	cout << "Torso Name: " << component.get_torso_name(index) << endl;
+	cout << "Head Name: " << component.get_head_name(index) << endl;
+	cout << "Arm Name: " << component.get_arm_name(index) << endl;
+	cout << "Arm2 Name: " << component.get_arm1_name(index) << endl;
+	cout << "Locomotor Name: " << component.get_locomotor_name(index) << endl;
+	cout << "Battery Name: " << component.get_battery_name(index) << endl;
 }
 
 string RobotModels::numParts_to_string(int index) {
@@ -226,11 +226,11 @@ void FullModel::createModel() {
 			cout << "Locomotor Name:" << endl;
 			getline(cin, modelName);
 			locomotor = modelName;
-			cout << "Speed of the motor?";
+			cout << "Adding Locomotor:" << endl << "Speed of the motor? ";
 			cin >> speed;
 			checkInputDouble(speed);
 			cin.ignore();
-			cout << "Adding Locomotor:" << endl << "Weight? ";
+			cout << "Weight? ";
 			cin >> weight;
 			checkInputDouble(weight);
 			cin.ignore();
@@ -254,7 +254,7 @@ void FullModel::createModel() {
 			cout << "Battery Name/Type:" << endl;
 			getline(cin, modelName);
 			battery = modelName;
-			cout << endl << battery.to_string() << endl << endl;
+			//cout << endl << battery.to_string() << endl << endl;
 			cout << "What is the Energy of these Batteries? " << endl;
 			cin >> energy;
 			checkInputDouble(energy);
@@ -267,7 +267,7 @@ void FullModel::createModel() {
 		case -1://Finish Model
 			if (modelTest == 1) {
 			cout << "Final Robot Model Finished." << endl;
-			cout << countParts<< "     123445"<<endl;
+			//cout << countParts<< "     123445"<<endl;
 			//cout << robotModels[0].numParts_string(countParts) << "\tDASAAD"<<endl;
 			
 		}
