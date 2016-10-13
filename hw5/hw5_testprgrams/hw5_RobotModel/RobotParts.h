@@ -36,8 +36,6 @@ class Torso {
 		}
 		
 	private:
-		double weight;
-		int batteryCompartments;
 		string nameTorso;
 
 		
@@ -56,7 +54,6 @@ class Head {
 			}
 
 		private:
-			double weight;
 			string nameHead;
 };
 
@@ -73,7 +70,6 @@ class Arm {
 		}
 
 	private:
-		double weight;
 		string nameArm;
 };
 
@@ -86,7 +82,6 @@ public:
 	}
 
 private:
-	double weight;
 	string nameArm1;
 };
 
@@ -104,8 +99,6 @@ class Battery {
 		}
 
 	private:
-		double energy;
-		double maxPower;
 		string nameBat;
 };
 
@@ -124,7 +117,6 @@ class Locomotor {
 		}
 
 	private:
-		int maxSpeed;
 		string nameLoc;
 };
 
@@ -172,14 +164,6 @@ private:
 	Arm arm;
 	Arm1 arm1;
 	Battery battery;
-	/*
-	string torso;
-	string head;
-	string locomotor;
-	string arm;
-	string battery;
-	*/
-	//Component component;
 };
 
 class Component {
@@ -196,10 +180,5 @@ public:
 	string get_battery_name(int index);
 private:
 	vector<RobotParts> robotParts;
-	//Torso torso;
-	//Head head;
-	//Locomotor locomotor;
-	//Arm arm;
-	//Battery battery;
 };
 #endif
