@@ -77,7 +77,7 @@ class FullModel {
 		void checkInputDouble(double inputDouble);
 		void add_model(RobotModels rm);
 
-		string model_to_string(int index);
+		//string model_to_string(int index);
 
 		void print(int index);
 		void printRM(int index);
