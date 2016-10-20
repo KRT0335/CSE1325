@@ -9,26 +9,8 @@
 
 using namespace std;
 
-//Connect to Robot Model
-/*
-Brainstorm:
-Give Models of Arms and Head
-Customer Customize values for Torso, Battery and Locomotor
-*/
-
-//vector<RobotParts> robotParts;
-
-
-/*
-List:
-int batteryCompacity
-*/
 class Torso {
 	public:
-		/*
-		Torso(int p_batteryCompartments):
-			batteryCompartments(p_batteryCompartments) {}
-		*/
 		Torso(string p_nameTorso): nameTorso(p_nameTorso){}
 
 		string to_string() {
@@ -41,10 +23,6 @@ class Torso {
 		
 };
 
-/*
-List:
-
-*/
 class Head {
 		public:
 			Head(string p_nameHead): nameHead(p_nameHead){}
@@ -57,10 +35,7 @@ class Head {
 			string nameHead;
 };
 
-/*
-List:
 
-*/
 class Arm {
 	public:
 		Arm(string p_nameArm) : nameArm(p_nameArm) {}
@@ -85,11 +60,7 @@ private:
 	string nameArm1;
 };
 
-/*
-List:
-double energy
-double maxPower
-*/
+
 class Battery {
 	public:
 		Battery(string p_nameBat) : nameBat(p_nameBat) {}
@@ -102,12 +73,6 @@ class Battery {
 		string nameBat;
 };
 
-/*
-List:
-int maxSpeed
-
-int powerComsume(int speed)
-*/
 class Locomotor {
 	public:
 		Locomotor(string p_nameLoc) : nameLoc(p_nameLoc) {}

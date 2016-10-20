@@ -11,13 +11,33 @@
 
 //Test the cout for the parts name
 void FullModel::print(int index) {
-	cout << component.parts_to_string(index) << endl;
+	cout << robotModels[index].modelName_to_string(index) << ":" << endl;
+	//cout << component.parts_to_string(index) << endl;
 	cout << "Torso Name: " << component.get_torso_name(index) << endl;
+	//cout << robotModels[index].numTorso_to_string(index) << endl;
 	cout << "Head Name: " << component.get_head_name(index) << endl;
+	//cout << robotModels[index].numHead_to_string(index) << endl;
+	cout << robotModels[index].numArm_to_string(index) << endl;
 	cout << "Arm Name: " << component.get_arm_name(index) << endl;
 	cout << "Arm2 Name: " << component.get_arm1_name(index) << endl;
 	cout << "Locomotor Name: " << component.get_locomotor_name(index) << endl;
+	cout << robotModels[index].speed_to_string(index) << endl;
 	cout << "Battery Name: " << component.get_battery_name(index) << endl;
+	cout << robotModels[index].energy_to_string(index) << endl;
+	cout << robotModels[index].numParts_to_string(index) << endl;
+	cout << robotModels[index].totalWeight_to_string(index) << endl;
+}
+
+void FullModel::printModelName(int index) {
+	cout << robotModels[index].modelName_to_string(index);
+}
+
+double RobotModels::get_weight(int index) {
+	return totalWeight;
+}
+
+string RobotModels::modelName_to_string(int index) {
+	return modelName;
 }
 
 string RobotModels::numParts_to_string(int index) {
@@ -80,18 +100,20 @@ void FullModel::printRM(int index) {
 
 void FullModel::checkInputInt(int x) {
 	while (cin.fail()) {
-		cerr << "Error" << endl;
+		cerr << "Error! ";
 		cin.clear();
 		cin.ignore(256, '\n');
+		cerr << "Please reenter:" << endl;
 		cin >> x;
 	}
 }
 
 void FullModel::checkInputDouble(double y) {
 	while (cin.fail()) {
-		cerr << "Error" << endl;
+		cerr << "Error! ";
 		cin.clear();
 		cin.ignore(256, '\n');
+		cerr << "Please reenter:" << endl;
 		cin >> y;
 	}
 }
@@ -100,7 +122,7 @@ void FullModel::add_model(RobotModels rm) {
 	robotModels.push_back(rm);
 }
 
-void FullModel::createModel() {
+void FullModel::createModel(int modelNumber) {
 	//vector<RobotParts> robotParts;
 
 	int select = 0, countParts = 0;
@@ -110,6 +132,7 @@ void FullModel::createModel() {
 	double weight, totalWeight = 0;
 	double energy = 0;
 	double speed = 0;
+	string fullModelName;
 	string modelName;
 	Torso torso = "None";
 	Head head = "None";
@@ -118,6 +141,7 @@ void FullModel::createModel() {
 	Locomotor locomotor = "None";
 	Battery battery = "None";
 
+	
 	while (select != -1) {
 		cout << "Select: " << endl << "[1] Add Torso"
 			<< endl << "[2] Add Head" << endl
@@ -127,6 +151,7 @@ void FullModel::createModel() {
 			<< "[-1] Finish Model" << endl;
 		cin >> select;
 		checkInputInt(select);
+		
 		
 
 		switch (select) {
@@ -267,12 +292,17 @@ void FullModel::createModel() {
 		case -1://Finish Model
 			if (modelTest == 1) {
 			cout << "Final Robot Model Finished." << endl;
+			cin.ignore();
+			cout << "Name your Model: ";
+			getline(cin, fullModelName);
 			//cout << countParts<< "     123445"<<endl;
 			//cout << robotModels[0].numParts_string(countParts) << "\tDASAAD"<<endl;
 			
 		}
-			else
+			else {
 				cout << "The Model lacks a Torso so the Model is Incomplete." << endl;
+				select = 0;
+			}
 			break;
 
 		default:
@@ -282,9 +312,13 @@ void FullModel::createModel() {
 		
 	}
 	//cout << countParts;
-	RobotParts insertRP(torso, head, locomotor, arm, arm1, battery);
-	component.add_part(insertRP);
-	cout << component.parts_to_string(0) << endl;
-	RobotModels insertRM(countParts, numTorso, numHead, numArm, numLocomotor, speed, batteryCapacity, energy, totalWeight);
-	add_model(insertRM);
+	if (modelTest == 1) {
+		RobotParts insertRP(torso, head, locomotor, arm, arm1, battery);
+		component.add_part(insertRP);
+		//cout << component.parts_to_string(0) << endl;
+		RobotModels insertRM(fullModelName, modelNumber, countParts, numTorso, numHead, numArm, numLocomotor, speed, batteryCapacity, energy, totalWeight);
+		add_model(insertRM);
+		modelNumber++;
+	}
+//return modelNumber;
 }

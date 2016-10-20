@@ -11,7 +11,9 @@
 
 class RobotModels {
 	public:
-		RobotModels(int p_numParts,
+		RobotModels(string p_modelName,
+			int p_modelNumber,
+			int p_numParts,
 			int p_numTorso,
 			int p_numHead,
 			int p_numArm,
@@ -21,6 +23,8 @@ class RobotModels {
 			double p_energy,
 			double p_totalWeight):
 			
+			modelName(p_modelName),
+			modelNumber(p_modelNumber),
 			numParts(p_numParts),
 			numTorso(p_numTorso),
 			numHead(p_numHead),
@@ -33,6 +37,8 @@ class RobotModels {
 			robotParts(RobotParts()){}
 
 		RobotModels():
+			modelName("None"),
+			modelNumber(0),
 			numParts(0),
 			numTorso(0),
 			numHead(0),
@@ -43,8 +49,8 @@ class RobotModels {
 			energy(0),
 			totalWeight(0){}
 
-		
-
+		double get_weight(int index);
+		string modelName_to_string(int index);
 		string numParts_to_string(int index);
 		string numTorso_to_string(int index);
 		string numHead_to_string(int index);
@@ -60,9 +66,11 @@ class RobotModels {
 		double totalWeight;
 		double energy;
 		double speed;
+		int modelNumber;
 		int numParts;
 		int batteryCapacity;
 		int numTorso, numHead, numArm, numLocomotor;
+		string modelName;
 		RobotParts robotParts;
 		Component component;
 
@@ -72,13 +80,12 @@ class RobotModels {
 class FullModel {
 	public:
 
-		void createModel();
+		void createModel(int modelNumber);
 		void checkInputInt(int inputInt);
 		void checkInputDouble(double inputDouble);
 		void add_model(RobotModels rm);
 
-		//string model_to_string(int index);
-
+		void printModelName(int index);
 		void print(int index);
 		void printRM(int index);
 
@@ -86,7 +93,7 @@ class FullModel {
 		Component component;
 		vector<RobotModels> robotModels;
 		vector<RobotParts> robotParts;
-		//Torso torso;
+		
 };
 
 #endif
