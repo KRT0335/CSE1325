@@ -1,3 +1,4 @@
+
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Button.H>
@@ -10,55 +11,140 @@
 #include <string>
 using namespace std;
 
-/*
-RobotPartDialog *robotPartsDialog;
-
-class RobotPartDialog {
-	public:
-		RobotPartsDialog(){};
-
-		RobotPartsDialog(
-			Fl_Input p_torso,
-			Fl_Input head,
-			Fl_Input arm,
-			Fl_Input locomotor,
-			Fl_Input battery
-			):
-
-		{}
 
 
-	private:
-		Fl_Window *cRP;
-		Fl_Input torso;
-		Fl_Input head;
-		Fl_Input arm;
-		Fl_Input locomotor;
-		Fl_Input battery;
-		
+
+
+
+
+class Torso {
+public:
+	Torso(
+		Fl_Input* pnameTorso
+	) :
+		nameTorso(pnameTorso) {}
+
+
+private:
+	Fl_Input* nameTorso;
 };
-*/
 
-void  close_cb(Fl_Widget* w, void* windo){
-	//Fl_Button  *but = (Fl_Button*)w;
+class Head {
+public:
+	Head(
+		Fl_Input* pnameHead
+	) :
+		nameHead( pnameHead ) {}
+
+
+private:
+	Fl_Input* nameHead;
+};
+
+class Arm {
+public:
+	Arm(
+		Fl_Input* pnameArm
+	) :
+		nameArm(pnameArm) {}
+
+
+private:
+	Fl_Input* nameArm;
+};
+
+class Locomotor {
+public:
+	Locomotor(
+		Fl_Input* pnameLocomotor
+	) :
+		nameLocomotor(pnameLocomotor) {}
+
+
+private:
+	Fl_Input* nameLocomotor;
+};
+
+class Battery {
+public:
+	Battery(
+		Fl_Input* pnameBattery
+	) :
+		nameBattery(pnameBattery) {}
+
+
+private:
+	Fl_Input* nameBattery;
+};
+
+
+class RobotParts {
+public:
+
+RobotParts(
+		Torso ptorso,
+		Head phead,
+		Arm parm,
+		Locomotor plocomotor,
+		Battery pbattery
+	):
+		torso(ptorso),
+		head(phead),
+		arm(parm),
+		locomotor(plocomotor),
+		battery(pbattery)
+	{}
+
+
+
+private:
+	Torso torso;
+	Head head;
+	Arm arm;
+	Locomotor locomotor;
+	Battery battery;
+
+};
+
+Torso *cctorso;
+Head *cchead;
+Arm *ccarm;
+Locomotor *cclocomotor;
+Battery *ccbattery;
+RobotParts *ccrobotParts;
+
+
+void  close_cb(Fl_Widget* w, void* windo) {
 	Fl_Window *win = (Fl_Window*)windo;
 	delete win;
 }
 
-void createTorso_cb(Fl_Widget* create, void*){
+
+static void f_output(Fl_Widget *w, void *userdata)
+{
+	Fl_Input  *in = (Fl_Input*)w;                // get input widget from first argument 
+	Fl_Output *out = (Fl_Output*)userdata;        // get output widget from userdata 
+	out->value(in->value());                        // set value of output to value of input 
+}
+
+void createTorso_cb(Fl_Widget* create, void* t) {
+	
+	
 	Fl_Window* cTorso = new Fl_Window(300, 550, "Create Torso");
 
-	cTorso->begin();
+	Torso *cctorso = (Torso*)t;
+
 	Fl_Input* nameTorso = new Fl_Input(50, 50, 200, 50, "Torso Name");
 	Fl_Button* finTorso = new Fl_Button(50, 450, 200, 50, "Finish");
+	nameTorso->callback();
 	finTorso->callback(close_cb, (void*)cTorso);
 	cTorso->end();
 	cTorso->show();
 }
 
-void createHead_cb(Fl_Widget* create, void*){
+void createHead_cb(Fl_Widget* create, void*) {
 	Fl_Window* cHead = new Fl_Window(300, 550, "Create Head");
-	
+
 	cHead->begin();
 	Fl_Input* nameHead = new Fl_Input(50, 50, 200, 50, "Head Name");
 	Fl_Button* finHead = new Fl_Button(50, 450, 200, 50, "Finish");
@@ -67,7 +153,7 @@ void createHead_cb(Fl_Widget* create, void*){
 	cHead->show();
 }
 
-void createArm_cb(Fl_Widget* create, void*){
+void createArm_cb(Fl_Widget* create, void*) {
 	Fl_Window* cArm = new Fl_Window(300, 550, "Create Arm");
 
 	cArm->begin();
@@ -78,7 +164,7 @@ void createArm_cb(Fl_Widget* create, void*){
 	cArm->show();
 }
 
-void createLocomotor_cb(Fl_Widget* create, void*){
+void createLocomotor_cb(Fl_Widget* create, void*) {
 	Fl_Window* cLocomotor = new Fl_Window(300, 550, "Create Locomotor");
 
 	cLocomotor->begin();
@@ -89,7 +175,7 @@ void createLocomotor_cb(Fl_Widget* create, void*){
 	cLocomotor->show();
 }
 
-void createBattery_cb(Fl_Widget* create, void*){
+void createBattery_cb(Fl_Widget* create, void*) {
 	Fl_Window* cBattery = new Fl_Window(300, 550, "Create Battery");
 
 	cBattery->begin();
@@ -102,12 +188,17 @@ void createBattery_cb(Fl_Widget* create, void*){
 
 
 void createRP_cb(Fl_Widget* create, void*) {
-	Fl_Window* cRP = new Fl_Window(300, 550, "Create Robot Parts");
+	Torso *cctorso;
+	
+	Fl_Window* cRP = new Fl_Window(300, 650, "Create Robot Parts");
 
 	cRP->begin();
 
+	Fl_Output* outt = new Fl_Output(50, 550, 200, 50, "out");
+	
+
 	Fl_Button* torso = new Fl_Button(50, 50, 200, 50, "Torso");
-	torso->callback(createTorso_cb);
+	torso->callback(createTorso_cb, (void*)cctorso);
 
 	Fl_Button* head = new Fl_Button(50, 150, 200, 50, "Head");
 	head->callback(createHead_cb);
@@ -120,7 +211,10 @@ void createRP_cb(Fl_Widget* create, void*) {
 
 	Fl_Button* battery = new Fl_Button(50, 450, 200, 50, "Battery");
 	battery->callback(createBattery_cb);
+
 	
+	
+
 	cRP->end();
 	cRP->show();
 }
