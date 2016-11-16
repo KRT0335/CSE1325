@@ -151,3 +151,43 @@ int main() {
 	return (Fl::run());
 }
 
+/* 
+//Code used to test storing input later used ffor closing windows
+//Wish I remember which forum helped me with this
+#include <FL/Fl.H> 
+#include <FL/Fl_Window.H> 
+#include <FL/Fl_Input.H> 
+#include <FL/Fl_Output.H> 
+
+static void f_output(Fl_Widget *w, void *userdata)
+{
+	Fl_Input  *in = (Fl_Input*)w;                // get input widget from first argument 
+	Fl_Output *out = (Fl_Output*)userdata;        // get output widget from userdata 
+	out->value(in->value());                        // set value of output to value of input 
+}
+
+int main(int argc, char ** argv)
+{
+	Fl_Window *window;
+	Fl_Input *input;
+	Fl_Output *output;
+
+	window = new Fl_Window(600, 400);
+	input = new Fl_Input(100, 200, 260, 20, "Input:");
+	output = new Fl_Output(100, 250, 260, 20, "Output:");
+
+	// Set input's callback to invoke 'MyCallback' 
+	// and pass a pointer to the output widget as 'userdata': 
+	// 
+	input->callback(f_output, (void*)output);
+	//                 /|\            /|\                                 // 
+	//                  |              |                                  // 
+	//                  |              'user data' will be a pointer      // 
+	//                  |              to the output widget               // 
+	//                  |                                                 // 
+	//                  The callback function (should not be a widget)    // 
+	window->end();
+	window->show(argc, argv);
+	return(Fl::run());
+}
+*/
