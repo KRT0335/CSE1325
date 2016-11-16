@@ -4,15 +4,45 @@
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Output.H>
+#include <FL/Fl_Group.H>
 #include <iostream>
 #include <cstdlib>
 #include <string>
 using namespace std;
 
+/*
+RobotPartDialog *robotPartsDialog;
+
+class RobotPartDialog {
+	public:
+		RobotPartsDialog(){};
+
+		RobotPartsDialog(
+			Fl_Input p_torso,
+			Fl_Input head,
+			Fl_Input arm,
+			Fl_Input locomotor,
+			Fl_Input battery
+			):
+
+		{}
 
 
-void  close_cb(Fl_Widget* w, void*){
-	exit(0);
+	private:
+		Fl_Window *cRP;
+		Fl_Input torso;
+		Fl_Input head;
+		Fl_Input arm;
+		Fl_Input locomotor;
+		Fl_Input battery;
+		
+};
+*/
+
+void  close_cb(Fl_Widget* w, void* windo){
+	//Fl_Button  *but = (Fl_Button*)w;
+	Fl_Window *win = (Fl_Window*)windo;
+	delete win;
 }
 
 void createTorso_cb(Fl_Widget* create, void*){
@@ -21,18 +51,18 @@ void createTorso_cb(Fl_Widget* create, void*){
 	cTorso->begin();
 	Fl_Input* nameTorso = new Fl_Input(50, 50, 200, 50, "Torso Name");
 	Fl_Button* finTorso = new Fl_Button(50, 450, 200, 50, "Finish");
-	finTorso->callback(close_cb);
+	finTorso->callback(close_cb, (void*)cTorso);
 	cTorso->end();
 	cTorso->show();
 }
 
 void createHead_cb(Fl_Widget* create, void*){
 	Fl_Window* cHead = new Fl_Window(300, 550, "Create Head");
-
+	
 	cHead->begin();
 	Fl_Input* nameHead = new Fl_Input(50, 50, 200, 50, "Head Name");
 	Fl_Button* finHead = new Fl_Button(50, 450, 200, 50, "Finish");
-	finHead->callback(close_cb);
+	finHead->callback(close_cb, (void*)cHead);
 	cHead->end();
 	cHead->show();
 }
@@ -43,7 +73,7 @@ void createArm_cb(Fl_Widget* create, void*){
 	cArm->begin();
 	Fl_Input* nameArm = new Fl_Input(50, 50, 200, 50, "Arm Name");
 	Fl_Button* finArm = new Fl_Button(50, 450, 200, 50, "Finish");
-	finArm->callback(close_cb);
+	finArm->callback(close_cb, (void*)cArm);
 	cArm->end();
 	cArm->show();
 }
@@ -54,7 +84,7 @@ void createLocomotor_cb(Fl_Widget* create, void*){
 	cLocomotor->begin();
 	Fl_Input* nameLocomotor = new Fl_Input(50, 50, 200, 50, "Locomotor Name");
 	Fl_Button* finLocomotor = new Fl_Button(50, 450, 200, 50, "Finish");
-	finLocomotor->callback(close_cb);
+	finLocomotor->callback(close_cb, (void*)cLocomotor);
 	cLocomotor->end();
 	cLocomotor->show();
 }
@@ -65,7 +95,7 @@ void createBattery_cb(Fl_Widget* create, void*){
 	cBattery->begin();
 	Fl_Input* nameBattery = new Fl_Input(50, 50, 200, 50, "Battery Name");
 	Fl_Button* finBattery = new Fl_Button(50, 450, 200, 50, "Finish");
-	finBattery->callback(close_cb);
+	finBattery->callback(close_cb, (void*)cBattery);
 	cBattery->end();
 	cBattery->show();
 }
@@ -120,3 +150,4 @@ int main() {
 	win.show();
 	return (Fl::run());
 }
+
