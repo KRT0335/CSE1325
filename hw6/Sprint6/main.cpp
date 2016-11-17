@@ -12,106 +12,24 @@
 using namespace std;
 
 
-
-
-
-
-
-class Torso {
-public:
-	Torso(
-		Fl_Input* pnameTorso
-	) :
-		nameTorso(pnameTorso) {}
-
-
-private:
-	Fl_Input* nameTorso;
-};
-
-class Head {
-public:
-	Head(
-		Fl_Input* pnameHead
-	) :
-		nameHead( pnameHead ) {}
-
-
-private:
-	Fl_Input* nameHead;
-};
-
-class Arm {
-public:
-	Arm(
-		Fl_Input* pnameArm
-	) :
-		nameArm(pnameArm) {}
-
-
-private:
-	Fl_Input* nameArm;
-};
-
-class Locomotor {
-public:
-	Locomotor(
-		Fl_Input* pnameLocomotor
-	) :
-		nameLocomotor(pnameLocomotor) {}
-
-
-private:
-	Fl_Input* nameLocomotor;
-};
-
-class Battery {
-public:
-	Battery(
-		Fl_Input* pnameBattery
-	) :
-		nameBattery(pnameBattery) {}
-
-
-private:
-	Fl_Input* nameBattery;
-};
-
+//RobotParts* robotParts;
 
 class RobotParts {
 public:
 
-RobotParts(
-		Torso ptorso,
-		Head phead,
-		Arm parm,
-		Locomotor plocomotor,
-		Battery pbattery
-	):
-		torso(ptorso),
-		head(phead),
-		arm(parm),
-		locomotor(plocomotor),
-		battery(pbattery)
+	RobotParts(
+		string ppart
+		) :
+		part(ppart)
 	{}
 
 
 
 private:
-	Torso torso;
-	Head head;
-	Arm arm;
-	Locomotor locomotor;
-	Battery battery;
+	string part;
 
 };
 
-Torso *cctorso;
-Head *cchead;
-Arm *ccarm;
-Locomotor *cclocomotor;
-Battery *ccbattery;
-RobotParts *ccrobotParts;
 
 
 void  close_cb(Fl_Widget* w, void* windo) {
@@ -127,13 +45,19 @@ static void f_output(Fl_Widget *w, void *userdata)
 	out->value(in->value());                        // set value of output to value of input 
 }
 
-void createTorso_cb(Fl_Widget* create, void* t) {
-	
-	
+void store(Fl_Widget* w, void* param){
+	string& str = *((string*)param);
+	Fl_Input* in = dynamic_cast<Fl_Input*>(w);
+	str = in->value();
+}
+
+void createTorso_cb(Fl_Widget* create, void* ) {
+
+
 	Fl_Window* cTorso = new Fl_Window(300, 550, "Create Torso");
 
-	Torso *cctorso = (Torso*)t;
-
+	
+	cTorso->begin();
 	Fl_Input* nameTorso = new Fl_Input(50, 50, 200, 50, "Torso Name");
 	Fl_Button* finTorso = new Fl_Button(50, 450, 200, 50, "Finish");
 	nameTorso->callback();
@@ -188,8 +112,8 @@ void createBattery_cb(Fl_Widget* create, void*) {
 
 
 void createRP_cb(Fl_Widget* create, void*) {
-	Torso *cctorso;
 	
+
 	Fl_Window* cRP = new Fl_Window(300, 650, "Create Robot Parts");
 
 	cRP->begin();
@@ -198,7 +122,7 @@ void createRP_cb(Fl_Widget* create, void*) {
 	
 
 	Fl_Button* torso = new Fl_Button(50, 50, 200, 50, "Torso");
-	torso->callback(createTorso_cb, (void*)cctorso);
+	torso->callback(createTorso_cb);
 
 	Fl_Button* head = new Fl_Button(50, 150, 200, 50, "Head");
 	head->callback(createHead_cb);
@@ -212,8 +136,8 @@ void createRP_cb(Fl_Widget* create, void*) {
 	Fl_Button* battery = new Fl_Button(50, 450, 200, 50, "Battery");
 	battery->callback(createBattery_cb);
 
-	
-	
+	outt->value("");
+
 
 	cRP->end();
 	cRP->show();
@@ -224,9 +148,10 @@ void createRM_cb(Fl_Widget* create, void*) {
 
 	cRM->begin();
 	Fl_Input* modelName = new Fl_Input(50, 50, 200, 50, "Robot Model Name");
-	Fl_Button* createParts = new Fl_Button(50, 150, 200, 50, "Create Parts");
+	Fl_Input* custName = new Fl_Input(50, 150, 200, 50, "Customer Name");
+	Fl_Button* createParts = new Fl_Button(50, 250, 200, 50, "Create Parts");
 	createParts->callback(createRP_cb);
-	Fl_Return_Button* finish = new Fl_Return_Button(50, 250, 200, 50, "Finish");
+	Fl_Return_Button* finish = new Fl_Return_Button(50, 350, 200, 50, "Finish");
 	finish->callback(close_cb);
 	cRM->end();
 	cRM->show();
