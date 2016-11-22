@@ -1,3 +1,11 @@
+/*
+Kevin Tiller
+11/22/2016
+1001110335
+CSE 1325 - 003
+*/
+
+
 #define _CRT_SECURE_NO_WARNINGS
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>
@@ -5,7 +13,6 @@
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Output.H>
-#include <FL/Fl_Group.H>
 #include <FL/Fl_Text_Display.H>
 #include <FL/Fl_Int_Input.H>
 #include <FL/Fl_Float_Input.H>
@@ -16,13 +23,21 @@
 #include <FL/Fl_Scroll.H>
 #include <FL/Fl_Browser.H>
 #include <FL/Fl_Hold_Browser.H>
+#include <FL/Fl_Image.H>
+#include <FL/Fl_Shared_Image.H>
+#include <FL/Fl_JPEG_Image.H>
 #include<vector>
 #include <iostream>
+#include <stdlib.h> 
 #include <cstring>
 #include <cstdlib>
 #include <string>
 using namespace std;
 
+class listOrders;
+class Orders;
+class listSalesAs;
+class SalesAs;
 class listCustomer;
 class Customer;
 class showRobotModel;
@@ -38,6 +53,10 @@ class Locomotor;
 class robotBattery;
 class Battery;
 
+listOrders *lOrd;
+Orders *orders;
+listSalesAs *lSA;
+SalesAs *SA;
 listCustomer *lC;
 Customer *customer;
 showRobotModel *sRM;
@@ -57,8 +76,6 @@ Fl_Window *winCata = 0;
 Fl_Hold_Browser *brCata = 0;
 Fl_Window *winRP = 0;
 Fl_Hold_Browser *brRP = 0;
-Fl_Group *groupRP[5] = { 0, 0, 0, 0, 0 }; //For each part
-Fl_Input *nameRM;
 
 Fl_Input *nameHead;
 Fl_Int_Input *numHead;
@@ -72,14 +89,25 @@ Fl_Input *nameLocomotor;
 
 Fl_Input *nameBattery;
 
+Fl_Input *nameRM;
 Fl_Input *nameHeadRM;
 Fl_Input *nameTorsoRM;
 Fl_Input *nameArmRM;
 Fl_Input *nameLocomotorRM;
 Fl_Input *nameBatteryRM;
+Fl_Float_Input *totalWeightRM;
+Fl_Float_Input *totalCostRM;
+
 
 Fl_Input *nameCustomer;
 Fl_Window* custWin;
+
+Fl_Input *nameSalesAs;
+Fl_Input *empnumSalesAs;
+Fl_Window* saWin;
+
+Fl_Input *nameOrders;
+Fl_Window *ordWin;
 
 Fl_Window* rmWin;
 Fl_Window* headWin;
@@ -88,6 +116,20 @@ Fl_Window* armWin;
 Fl_Window* locomotorWin;
 Fl_Window* batteryWin;
 
+Fl_Window* pWin;
+Fl_Window* cWin;
+Fl_Hold_Browser *brCust = 0;
+Fl_Hold_Browser *brSA = 0;
+
+Fl_Box* picbox;
+Fl_JPEG_Image * picimage;
+
+static int brIndexRM;
+static int brIndexSA;
+static int brIndexC;
+
+char* printOrders = new char[1000];
+char* printSalesAs = new char[1000];
 char* printCustomer = new char[1000];
 char* printRM = new char[1000];
 char* printHead = new char[1000];
@@ -95,9 +137,10 @@ char* printTorso = new char[1000];
 char* printArm = new char[1000];
 char* printLocomotor = new char[1000];
 char* printBattery = new char[1000];
-//static int select = 0;
 
-void cata(Fl_Widget* w, void* p);
+void viewcb(Fl_Widget* w, void* p);
+void cata(Fl_Widget* w, void* p); 
+void addSalesAs(Fl_Widget* w, void* p);
 void addCustomer(Fl_Widget* w, void* p);
 void addRM(Fl_Widget* w, void* p);
 void addHead(Fl_Widget* w, void* p);
@@ -111,48 +154,7 @@ void  close_cb(Fl_Widget* w, void* windo) {
 	delete win;
 }
 
-void  bro(Fl_Widget* w, void* windo) {
-	winRP = new Fl_Window(600, 600, "Robot Parts");
-
-	winRP->begin();
-	brRP = new Fl_Hold_Browser(50, 50, 100, 300);
-
-	brRP->add("Head");
-
-	brRP->add("Torso");
-	brRP->add("Arm");
-	brRP->add("Locomotor");
-	brRP->add("Batteries");
-
-	if (brRP->selected(0)) {
-		groupRP[0] = new Fl_Group(150, 50, 400, 400, "Head");
-		groupRP[0]->box(FL_ENGRAVED_BOX);
-		groupRP[0]->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP);
-		groupRP[0]->labelsize(24);
-		nameHead = new Fl_Input(250, 80, 200, 20, "Head Name:");
-		numHead = new Fl_Int_Input(250, 110, 200, 20, "Part Number:");
-
-		groupRP[0]->end();
-		groupRP[0]->show();
-		winRP->redraw();
-	}
-
-	if (brRP->selected(1)) {
-		groupRP[1] = new Fl_Group(150, 50, 400, 400, "Torso");
-		groupRP[1]->box(FL_ENGRAVED_BOX);
-		groupRP[1]->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP);
-		groupRP[1]->labelsize(24);
-		nameHead = new Fl_Input(250, 80, 200, 20, "Torso Name:");
-		numHead = new Fl_Int_Input(250, 110, 200, 20, "Part Number:");
-
-		groupRP[1]->end();
-	}
-	winRP->redraw();
-	winRP->end();
-	winRP->show();
-}
-
-void store(Fl_Widget* w, void* p) {
+void store(Fl_Widget* w, void* p){
 
 
 	char* res = new char[1000];
@@ -161,9 +163,9 @@ void store(Fl_Widget* w, void* p) {
 	Fl_Text_Buffer *buff = new Fl_Text_Buffer();    // make a buffer to display text
 	Fl_Text_Display *disp = new Fl_Text_Display(20, 20, 650 - 40, 480 - 40, "Checkout Summary");   // display box
 	disp->buffer(buff);     // set buffer
-							//win->resizable(*disp);  // make window resizable
+	//win->resizable(*disp);  // make window resizable
 	win->show();            //show window
-
+	
 	strcpy(res, "");
 	strcat(res, nameHead->value());
 	buff->text(res);
@@ -173,19 +175,173 @@ void store(Fl_Widget* w, void* p) {
 
 
 
-void createHead_cb(Fl_Widget* create, void* p) {
-	Fl_Window* cHead = new Fl_Window(300, 550, "Create Head");
-
-	cHead->begin();
-	nameHead = new Fl_Input(50, 50, 200, 50, "Head Name");
-	Fl_Button* finHead = new Fl_Button(50, 450, 200, 50, "Finish");
-	finHead->callback(store);
-	//finHead->callback(close_cb, (void*)cHead);
-	cHead->end();
-	cHead->show();
-}
 
 
+
+
+
+
+/*-------------------------------------/
+----------------Orders-----------------/
+---------------------------------------*/
+
+class Orders{
+public:
+	Orders(){};
+	Orders(
+		char* pnameSAO, 
+		char* pnameSAenO, 
+		char* pnameCustO, 
+		char* pnameRMO, 
+		char* pnameHO, 
+		char* pnameTO, 
+		char* pnameAO, 
+		char* pnameLO, 
+		char* pnameBO, 
+		double pnameWO, 
+		double pnameCO ) : 
+		
+		nameSAO(pnameSAO),
+		nameSAenO(pnameSAenO),
+		nameCustO(pnameCustO),
+		nameRMO(pnameRMO),
+		nameHO(pnameHO),
+		nameTO(pnameTO),
+		nameAO(pnameAO),
+		nameLO(pnameLO),
+		nameBO(pnameBO),
+		nameWO(pnameWO),
+		nameCO(pnameCO) {}
+
+	char* get_nameSAO(){ return nameSAO; }
+	char* get_nameSAenO(){ return nameSAenO; }
+	char* get_nameCustO(){ return nameCustO; }
+	char* get_nameRMO(){ return nameRMO; }
+	char* get_nameHO(){ return nameHO; }
+	char* get_nameTO(){ return nameTO; }
+	char* get_nameAO(){ return nameAO; }
+	char* get_nameLO(){ return nameLO; }
+	char* get_nameBO(){ return nameBO; }
+	double get_nameWO(){ return nameWO; }
+	double get_nameCO(){ return nameCO; }
+
+private:
+	char* nameSAO = new char[100];
+	char* nameSAenO = new char[100];
+	char* nameCustO = new char[100];
+	char* nameRMO = new char[100];
+	char* nameHO = new char[100];
+	char* nameTO = new char[100];
+	char* nameAO = new char[100];
+	char* nameLO = new char[100];
+	char* nameBO = new char[100];
+	double nameWO;
+	double nameCO;
+};
+
+class listOrders{
+public:
+	/*listOrders(){
+
+
+		ordWin = new Fl_Window(300, 400, "Customer Info");
+
+		nameOrders = new Fl_Input(50, 10, 250, 20, "Name:");
+
+
+		createOrders = new Fl_Button(120, 320, 120, 30, "Add");
+		createOrders->callback((Fl_Callback*)addOrders);
+
+
+		ordWin->end();
+		ordWin->set_non_modal();
+	}
+	*/
+	void showO(){ ordWin->show(); }
+	void hideO(){ ordWin->hide(); }
+	char* nameOrdersName(){ return (char*)nameOrders->value(); }
+	int size(){ return orders.size(); }
+
+	char* nameSAOrdersVec(int i){ return orders[i].get_nameSAO(); }
+	char* nameSAenOrdersVec(int i){ return orders[i].get_nameSAenO(); }
+	char* nameCustOrdersVec(int i){ return orders[i].get_nameCustO(); }
+	char* nameRMOrdersVec(int i){ return orders[i].get_nameRMO(); }
+	char* nameHOrdersVec(int i){ return orders[i].get_nameHO(); }
+	char* nameTOrdersVec(int i){ return orders[i].get_nameTO(); }
+	char* nameAOrdersVec(int i){ return orders[i].get_nameAO(); }
+	char* nameLOrdersVec(int i){ return orders[i].get_nameLO(); }
+	char* nameBOrdersVec(int i){ return orders[i].get_nameBO(); }
+	double nameWOrdersVec(int i){ return orders[i].get_nameWO(); }
+	double nameCOrdersVec(int i){ return orders[i].get_nameCO(); }
+
+
+	void get_orders(Orders o){
+		orders.push_back(o);
+	}
+
+
+
+private:
+	Fl_Button* createOrders;
+	vector<Orders> orders;
+};
+
+
+
+
+/*--------------------------------------------/
+----------------Sales Associate---------------/
+---------------------------------------------*/
+
+class SalesAs{
+public:
+	SalesAs(){};
+	SalesAs(char* pnameSA, char* pempnum) : nameSA(pnameSA), empnum(pempnum){}
+
+	char* get_nameSA(){ return nameSA; }
+	char* get_empnum(){ return empnum; }
+private:
+	char* nameSA = new char[100];
+	char* empnum = new char[100];
+};
+
+class listSalesAs{
+public:
+	listSalesAs(){
+
+
+		saWin = new Fl_Window(400, 300, "Sales Associate Info");
+
+		nameSalesAs = new Fl_Input(130, 10, 250, 20, "Name:");
+		empnumSalesAs = new Fl_Input(130, 40, 250, 20, "Employee Number:");
+
+		createSalesAs = new Fl_Button(120, 220, 120, 30, "Add");
+		createSalesAs->callback((Fl_Callback*)addSalesAs);
+
+
+		saWin->end();
+		saWin->set_non_modal();
+	}
+
+	void showSA(){ saWin->show(); }
+	void hideSA(){ saWin->hide(); }
+	char* nameSalesAsName(){ return (char*)nameSalesAs->value(); }
+	char* empnumSalesAsName(){ return (char*)empnumSalesAs->value(); }
+	int size(){ return SA.size(); }
+
+	char* nameSalesAsVec(int i){ return SA[i].get_nameSA(); }
+	char* empnumSalesAsVec(int i){ return SA[i].get_empnum(); }
+
+	void get_SA(SalesAs sa){
+		SA.push_back(sa);
+	}
+
+
+
+private:
+	Fl_Button* createSalesAs;
+	vector<SalesAs> SA;
+};
 
 
 
@@ -195,20 +351,19 @@ void createHead_cb(Fl_Widget* create, void* p) {
 ----------------Customer---------------/
 ---------------------------------------*/
 
-class Customer {
+class Customer{
 public:
-	Customer() {};
-	Customer(char* pnameC) : nameC(pnameC) {}
-	//Customer(char* pnameC, vector<RobotModel>rm) : nameC(pnameC) {}
+	Customer(){};
+	Customer(char* pnameC) : nameC(pnameC){}
 
-	char* get_nameC() { return nameC; }
+	char* get_nameC(){ return nameC; }
 private:
 	char* nameC = new char[100];
 };
 
-class listCustomer {
+class listCustomer{
 public:
-	listCustomer() {
+	listCustomer(){
 
 
 		custWin = new Fl_Window(300, 400, "Customer Info");
@@ -224,15 +379,15 @@ public:
 		custWin->set_non_modal();
 	}
 
-	void showC() { custWin->show(); }
-	void hideC() { custWin->hide(); }
-	char* nameCustomerName() { return (char*)nameCustomer->value(); }
-	int size() { return customer.size(); }
+	void showC(){ custWin->show(); }
+	void hideC(){ custWin->hide(); }
+	char* nameCustomerName(){ return (char*)nameCustomer->value(); }
+	int size(){ return customer.size(); }
 
-	char* nameCustomerVec(int i) { return customer[i].get_nameC(); }
+	char* nameCustomerVec(int i){ return customer[i].get_nameC(); }
 
 
-	void get_customer(Customer c) {
+	void get_customer(Customer c){
 		customer.push_back(c);
 	}
 
@@ -249,29 +404,22 @@ private:
 /*-------------------------------------/
 ----------------Robot Model------------/
 ---------------------------------------*/
-class RobotModel {
+class RobotModel{
 public:
-	RobotModel() {}
+	RobotModel(){}
 
-	RobotModel(char* pnameRM, char* pnameHRM, char* pnameTRM, char* pnameARM, char* pnameLRM, char* pnameBRM) :
-		nameRM(pnameRM), nameHRM(pnameHRM), nameTRM(pnameTRM), nameARM(pnameARM), nameLRM(pnameLRM), nameBRM(pnameBRM) {}
+	RobotModel(char* pnameRM, char* pnameHRM, char* pnameTRM, char* pnameARM, char* pnameLRM, char* pnameBRM, double pweightRM, double pcostRM) :
+		nameRM(pnameRM), nameHRM(pnameHRM), nameTRM(pnameTRM), nameARM(pnameARM), nameLRM(pnameLRM), nameBRM(pnameBRM), weightRM(pweightRM), costRM(pcostRM) {}
 
-	/*
-	RobotModel():
-	nameRM("None"),
-	nameH("None"),
-	nameT("None"),
-	nameA("None"),
-	nameL("None"),
-	nameB("None"){}
-	*/
 
-	char* get_nameRM() { return nameRM; }
-	char* get_nameHRM() { return nameHRM; }
-	char* get_nameTRM() { return nameTRM; }
-	char* get_nameARM() { return nameARM; }
-	char* get_nameLRM() { return nameLRM; }
-	char* get_nameBRM() { return nameBRM; }
+	char* get_nameRM(){ return nameRM; }
+	char* get_nameHRM(){ return nameHRM; }
+	char* get_nameTRM(){ return nameTRM; }
+	char* get_nameARM(){ return nameARM; }
+	char* get_nameLRM(){ return nameLRM; }
+	char* get_nameBRM(){ return nameBRM; }
+	double get_weightRM(){ return weightRM; }
+	double get_costRM(){ return costRM; }
 
 private:
 	char* nameRM = new char[100];
@@ -280,19 +428,22 @@ private:
 	char* nameARM = new char[100];
 	char* nameLRM = new char[100];
 	char* nameBRM = new char[100];
+	double weightRM, costRM;
 };
 
-class showRobotModel {
+class showRobotModel{
 public:
-	showRobotModel() {
+	showRobotModel(){
 		rmWin = new Fl_Window(500, 400, "RobotModel Info");
 
-		nameRM = new Fl_Input(150, 10, 300, 20, "RobotModel Name:");
-		nameHeadRM = new Fl_Input(150, 40, 300, 20, "Head Name:");
-		nameTorsoRM = new Fl_Input(150, 70, 300, 20, "Torso Name:");
-		nameArmRM = new Fl_Input(150, 100, 300, 20, "Arm Name:");
-		nameLocomotorRM = new Fl_Input(150, 130, 300, 20, "Locomotor Name:");
-		nameBatteryRM = new Fl_Input(150, 160, 300, 20, "Battery Name:");
+		nameRM = new Fl_Input(150, 10, 200, 20, "RobotModel Name:");
+		nameHeadRM = new Fl_Input(150, 40, 200, 20, "Head Name:");
+		nameTorsoRM = new Fl_Input(150, 70, 200, 20, "Torso Name:");
+		nameArmRM = new Fl_Input(150, 100, 200, 20, "Arm Name:");
+		nameLocomotorRM = new Fl_Input(150, 130, 200, 20, "Locomotor Name:");
+		nameBatteryRM = new Fl_Input(150, 160, 200, 20, "Battery Name:");
+		totalWeightRM = new Fl_Float_Input(150, 190, 200, 20, "Total Weight:");
+		totalCostRM = new Fl_Float_Input(150, 220, 200, 20, "Total Cost:$");
 
 		createRM = new Fl_Button(120, 320, 120, 30, "Create");
 		createRM->callback((Fl_Callback*)addRM);
@@ -302,27 +453,30 @@ public:
 		rmWin->set_non_modal();
 	}
 
-	void showRM() { rmWin->show(); }
-	void hideRM() { rmWin->hide(); }
+	void showRM(){ rmWin->show(); }
+	void hideRM(){ rmWin->hide(); }
 
-	char* nameRMName() { return (char*)nameRM->value(); }
-	char* nameHeadNameRM() { return (char*)nameHeadRM->value(); }
-	char* nameTorsoNameRM() { return (char*)nameTorsoRM->value(); }
-	char* nameArmNameRM() { return (char*)nameArmRM->value(); }
-	char* nameLocomotorNameRM() { return (char*)nameLocomotorRM->value(); }
-	char* nameBatteryNameRM() { return (char*)nameBatteryRM->value(); }
+	char* nameRMName(){ return (char*)nameRM->value(); }
+	char* nameHeadNameRM(){ return (char*)nameHeadRM->value(); }
+	char* nameTorsoNameRM(){ return (char*)nameTorsoRM->value(); }
+	char* nameArmNameRM(){ return (char*)nameArmRM->value(); }
+	char* nameLocomotorNameRM(){ return (char*)nameLocomotorRM->value(); }
+	char* nameBatteryNameRM(){ return (char*)nameBatteryRM->value(); }
+	//double getTotalWeightRM(){ return (double)totalWeightRM->value(); }
 
-	int size() { return RM.size(); }
+	int size(){ return RM.size(); }
 
-	char* nameRMVec(int i) { return RM[i].get_nameRM(); }
-	char* nameHeadVecRM(int i) { return RM[i].get_nameHRM(); }
-	char* nameTorsoVecRM(int i) { return RM[i].get_nameTRM(); }
-	char* nameArmVecRM(int i) { return RM[i].get_nameARM(); }
-	char* nameLocomotorVecRM(int i) { return RM[i].get_nameLRM(); }
-	char* nameBatteryVecRM(int i) { return RM[i].get_nameBRM(); }
+	char* nameRMVec(int i)				{ return RM[i].get_nameRM(); }
+	char* nameHeadVecRM(int i)			{ return RM[i].get_nameHRM(); }
+	char* nameTorsoVecRM(int i)			{ return RM[i].get_nameTRM(); }
+	char* nameArmVecRM(int i)			{ return RM[i].get_nameARM(); }
+	char* nameLocomotorVecRM(int i)		{ return RM[i].get_nameLRM(); }
+	char* nameBatteryVecRM(int i)		{ return RM[i].get_nameBRM(); }
+	double totalWeightVecRM(int i)		{ return RM[i].get_weightRM(); }
+	double totalCostVecRM(int i)		{ return RM[i].get_costRM(); }
 
 
-	void get_rm(RobotModel rm) {
+	void get_rm(RobotModel rm){
 		RM.push_back(rm);
 	}
 
@@ -340,60 +494,60 @@ private:
 
 
 /*-----------------Robot Parts Classes and Derived---------------*/
-class Head {
+class Head{
 public:
-	Head() {};
-	Head(char* pnameH) : nameH(pnameH) {}
+	Head(){};
+	Head(char* pnameH) : nameH(pnameH){}
 
-	char* get_nameH() { return nameH; }
+	char* get_nameH(){ return nameH; }
 private:
 	char* nameH = new char[100];
 };
 
-class Torso {
+class Torso{
 public:
-	Torso() {};
-	Torso(char* pnameT) : nameT(pnameT) {}
+	Torso(){};
+	Torso(char* pnameT) : nameT(pnameT){}
 
-	char* get_nameT() { return nameT; }
+	char* get_nameT(){ return nameT; }
 private:
 	char* nameT = new char[100];
 };
 
-class Arm {
+class Arm{
 public:
-	Arm() {};
-	Arm(char* pnameA) : nameA(pnameA) {}
+	Arm(){};
+	Arm(char* pnameA) : nameA(pnameA){}
 
-	char* get_nameA() { return nameA; }
+	char* get_nameA(){ return nameA; }
 private:
 	char* nameA = new char[100];
 };
 
-class Locomotor {
+class Locomotor{
 public:
-	Locomotor() {};
-	Locomotor(char* pnameL) : nameL(pnameL) {}
+	Locomotor(){};
+	Locomotor(char* pnameL) : nameL(pnameL){}
 
-	char* get_nameL() { return nameL; }
+	char* get_nameL(){ return nameL; }
 private:
 	char* nameL = new char[100];
 };
 
-class Battery {
+class Battery{
 public:
-	Battery() {};
-	Battery(char* pnameB) : nameB(pnameB) {}
+	Battery(){};
+	Battery(char* pnameB) : nameB(pnameB){}
 
-	char* get_nameB() { return nameB; }
+	char* get_nameB(){ return nameB; }
 private:
 	char* nameB = new char[100];
 };
 
-class robotHead {
+class robotHead{
 public:
-	robotHead() {
-
+	robotHead(){
+		
 
 		headWin = new Fl_Window(300, 400, "Head Info");
 
@@ -402,21 +556,21 @@ public:
 
 		createHead = new Fl_Button(120, 320, 120, 30, "Create");
 		createHead->callback((Fl_Callback*)addHead);
-
+		
 
 		headWin->end();
 		headWin->set_non_modal();
 	}
 
-	void showH() { headWin->show(); }
-	void hideH() { headWin->hide(); }
-	char* nameHeadName() { return (char*)nameHead->value(); }
-	int size() { return head.size(); }
+	void showH(){ headWin->show(); }
+	void hideH(){ headWin->hide(); }
+	char* nameHeadName(){ return (char*)nameHead->value(); }
+	int size(){ return head.size(); }
 
-	char* nameHeadVec(int i) { return head[i].get_nameH(); }
+	char* nameHeadVec(int i){ return head[i].get_nameH(); }
 
 
-	void get_head(Head h) {
+	void get_head(Head h){
 		head.push_back(h);
 	}
 
@@ -427,9 +581,9 @@ private:
 	vector<Head> head;
 };
 
-class robotTorso {
+class robotTorso{
 public:
-	robotTorso() {
+	robotTorso(){
 
 
 		torsoWin = new Fl_Window(300, 400, "Torso Info");
@@ -445,15 +599,15 @@ public:
 		torsoWin->set_non_modal();
 	}
 
-	void showT() { torsoWin->show(); }
-	void hideT() { torsoWin->hide(); }
-	char* nameTorsoName() { return (char*)nameTorso->value(); }
-	int size() { return torso.size(); }
+	void showT(){ torsoWin->show(); }
+	void hideT(){ torsoWin->hide(); }
+	char* nameTorsoName(){ return (char*)nameTorso->value(); }
+	int size(){ return torso.size(); }
 
-	char* nameTorsoVec(int i) { return torso[i].get_nameT(); }
+	char* nameTorsoVec(int i){ return torso[i].get_nameT(); }
 
 
-	void get_torso(Torso t) {
+	void get_torso(Torso t){
 		torso.push_back(t);
 	}
 
@@ -464,9 +618,9 @@ private:
 	vector<Torso> torso;
 };
 
-class robotArm {
+class robotArm{
 public:
-	robotArm() {
+	robotArm(){
 
 
 		armWin = new Fl_Window(300, 400, "Arm Info");
@@ -482,15 +636,15 @@ public:
 		armWin->set_non_modal();
 	}
 
-	void showA() { armWin->show(); }
-	void hideA() { armWin->hide(); }
-	char* nameArmName() { return (char*)nameArm->value(); }
-	int size() { return arm.size(); }
+	void showA(){ armWin->show(); }
+	void hideA(){ armWin->hide(); }
+	char* nameArmName(){ return (char*)nameArm->value(); }
+	int size(){ return arm.size(); }
 
-	char* nameArmVec(int i) { return arm[i].get_nameA(); }
+	char* nameArmVec(int i){ return arm[i].get_nameA(); }
 
 
-	void get_arm(Arm a) {
+	void get_arm(Arm a){
 		arm.push_back(a);
 	}
 
@@ -501,9 +655,9 @@ private:
 	vector<Arm> arm;
 };
 
-class robotLocomotor {
+class robotLocomotor{
 public:
-	robotLocomotor() {
+	robotLocomotor(){
 
 
 		locomotorWin = new Fl_Window(300, 400, "Locomotor Info");
@@ -519,15 +673,15 @@ public:
 		locomotorWin->set_non_modal();
 	}
 
-	void showL() { locomotorWin->show(); }
-	void hideL() { locomotorWin->hide(); }
-	char* nameLocomotorName() { return (char*)nameLocomotor->value(); }
-	int size() { return locomotor.size(); }
+	void showL(){ locomotorWin->show(); }
+	void hideL(){ locomotorWin->hide(); }
+	char* nameLocomotorName(){ return (char*)nameLocomotor->value(); }
+	int size(){ return locomotor.size(); }
 
-	char* nameLocomotorVec(int i) { return locomotor[i].get_nameL(); }
+	char* nameLocomotorVec(int i){ return locomotor[i].get_nameL(); }
 
 
-	void get_locomotor(Locomotor l) {
+	void get_locomotor(Locomotor l){
 		locomotor.push_back(l);
 	}
 
@@ -538,9 +692,9 @@ private:
 	vector<Locomotor> locomotor;
 };
 
-class robotBattery {
+class robotBattery{
 public:
-	robotBattery() {
+	robotBattery(){
 
 
 		batteryWin = new Fl_Window(300, 400, "Battery Info");
@@ -556,15 +710,15 @@ public:
 		batteryWin->set_non_modal();
 	}
 
-	void showB() { batteryWin->show(); }
-	void hideB() { batteryWin->hide(); }
-	char* nameBatteryName() { return (char*)nameBattery->value(); }
-	int size() { return battery.size(); }
+	void showB(){ batteryWin->show(); }
+	void hideB(){ batteryWin->hide(); }
+	char* nameBatteryName(){ return (char*)nameBattery->value(); }
+	int size(){ return battery.size(); }
 
-	char* nameBatteryVec(int i) { return battery[i].get_nameB(); }
+	char* nameBatteryVec(int i){ return battery[i].get_nameB(); }
 
 
-	void get_battery(Battery b) {
+	void get_battery(Battery b){
 		battery.push_back(b);
 	}
 
@@ -576,61 +730,276 @@ private:
 };
 
 
-/*-------------------------------------/
-----------------CALLBACKS---------------/
----------------------------------------*/
+/*----------------------------------------------------------------------------------------------/
+----------------------------------------------CALLBACKS------------------------------------------/
+-------------------------------------------------------------------------------------------------*/
 
+void listingOrders(Fl_Widget* w, void* p){
 
-void viewCatacb(Fl_Widget* w, void* p) {
+	strcpy(printOrders, "");
+
+	
+	Fl_Window *win = new Fl_Window(650, 480);
+	Fl_Text_Buffer *buff = new Fl_Text_Buffer();
+	Fl_Text_Display *disp = new Fl_Text_Display(20, 20, 650 - 40, 480 - 40, "Orders");
+	disp->buffer(buff);
+	win->show();
+	int i;
+	for (i = 0; i < lOrd->size(); i++){
+		strcat(printOrders, "Sales Associate: ");
+		strcat(printOrders, lOrd->nameSAOrdersVec(i));
+		strcat(printOrders, "\nEmployee Number: ");
+		strcat(printOrders, lOrd->nameSAenOrdersVec(i));
+		strcat(printOrders, "\nCustomer: ");
+		strcat(printOrders, lOrd->nameCustOrdersVec(i));
+		strcat(printOrders, "\nRobot Model: ");
+		strcat(printOrders, lOrd->nameRMOrdersVec(i));
+		strcat(printOrders, "\nHead Part: ");
+		strcat(printOrders, lOrd->nameHOrdersVec(i));
+		strcat(printOrders, "\nTorso Part: ");
+		strcat(printOrders, lOrd->nameTOrdersVec(i));
+		strcat(printOrders, "\nArm Part: ");
+		strcat(printOrders, lOrd->nameAOrdersVec(i));
+		strcat(printOrders, "\nLocomotor Part: ");
+		strcat(printOrders, lOrd->nameLOrdersVec(i));
+		strcat(printOrders, "\nBattery :");
+		strcat(printOrders, lOrd->nameBOrdersVec(i));
+		strcat(printOrders, "\nTotal Weight: ");
+
+		string con = to_string(lOrd->nameWOrdersVec(i));
+		char* con2 = new char[con.length() + 1];
+		strcpy(con2, con.c_str());
+
+		strcat(printOrders, con2);
+		strcat(printOrders, "\nTotal Cost :$");
+
+		con = to_string(lOrd->nameCOrdersVec(i));
+		con2 = new char[con.length() + 1];
+		strcpy(con2, con.c_str());
+
+		strcat(printOrders, con2);
+		strcat(printOrders, "\n\n");
+	}
+	buff->text(printOrders);
+
+}
+
+void finalStep(Fl_Widget* w, void* p){
+	Fl_Hold_Browser *brCata4 = (Fl_Hold_Browser*)p;
+
+	brIndexC = brCata4->value() - 1; //Index for Models in the vector
+
+	char* resSA = new char[1000];
+	strcpy(resSA, "");
+	strcat(resSA, lSA->nameSalesAsVec(brIndexSA));
+
+	char* resSAen = new char[1000];
+	strcpy(resSAen, "");
+	strcat(resSAen, lSA->empnumSalesAsVec(brIndexSA));
+
+	char* resCust = new char[1000];
+	strcpy(resCust, "");
+	strcat(resCust, lC->nameCustomerVec(brIndexC));
+
+	char* resRM = new char[1000];
+	strcpy(resRM, "");
+	strcat(resRM, sRM->nameRMVec(brIndexRM));
+
+	char* resH = new char[1000];
+	strcpy(resH, "");
+	strcat(resH, sRM->nameHeadVecRM(brIndexRM));
+
+	char* resT = new char[1000];
+	strcpy(resT, "");
+	strcat(resT, sRM->nameTorsoVecRM(brIndexRM));
+
+	char* resA = new char[1000];
+	strcpy(resA, "");
+	strcat(resA, sRM->nameArmVecRM(brIndexRM));
+
+	char* resL = new char[1000];
+	strcpy(resL, "");
+	strcat(resL, sRM->nameLocomotorVecRM(brIndexRM));
+
+	char* resB = new char[1000];
+	strcpy(resB, "");
+	strcat(resB, sRM->nameBatteryVecRM(brIndexRM));
+
+	double resW = sRM->totalWeightVecRM(brIndexRM);
+	double resC = sRM->totalCostVecRM(brIndexRM);
+
+	Orders insertOrd(resSA, resSAen, resCust, resRM, resH, resT, resA, resL, resB, resW, resC);
+	lOrd->get_orders(insertOrd);
+
+	cWin->hide();
+	pWin->hide();
+	winCata->hide();
+}
+
+void verifyCust(Fl_Widget* w, void* p){
+	Fl_Hold_Browser *brCata3 = (Fl_Hold_Browser*)p;
+
+	brIndexSA = brCata3->value() - 1; //Index for Models in the vector
+
+	cWin = new Fl_Window(600, 600);
+	cWin->begin();
+	brCust = new Fl_Hold_Browser(50, 50, 100, 500, "Customer");
+
+	int i;
+	for (i = 0; i < lC->size(); i++){
+		brCust->add(lC->nameCustomerVec(i));
+	}
+	if (lC->size() > 0){
+		brCust->select(1);
+		Fl_Button *nextButton = new Fl_Button(350, 500, 100, 50, "Purchase");
+
+		nextButton->callback((Fl_Callback*)finalStep, (void*)brCust);
+	}
+
+	cWin->end();
+	cWin->show();
+
+}
+
+void mkPurchase(Fl_Widget* w, void* p){
+	Fl_Hold_Browser *brCata2 = (Fl_Hold_Browser*)p;
+
+	brIndexRM = brCata2->value() - 1; //Index for Models in the vector
+
+	pWin = new Fl_Window(600, 600);
+	pWin->begin();
+	brSA = new Fl_Hold_Browser(50, 50, 100, 500, "Sales Associate");
+
+	int i;
+	for (i = 0; i < lSA->size(); i++){
+		brSA->add(lSA->nameSalesAsVec(i));
+	}
+	if (lSA->size() > 0){
+		brSA->select(1);
+		Fl_Button *nextButton = new Fl_Button(350, 500, 100, 50, "Choose Customer");
+		
+		nextButton->callback((Fl_Callback*)verifyCust, (void*)brSA);
+	}
+
+	pWin->end();
+	pWin->show();
+
+}
+
+void viewcb(Fl_Widget* w, void* p){
 	Fl_Hold_Browser *brCata2 = (Fl_Hold_Browser*)p;
 
 	strcpy(printRM, "");
 
-	int i = brCata2->value();
-	Fl_Window *win = new Fl_Window(650, 480);
+	int i = brCata2->value()-1;
+	Fl_Window *win = new Fl_Window(1050, 480);
 	Fl_Text_Buffer *buff = new Fl_Text_Buffer();
-	Fl_Text_Display *disp = new Fl_Text_Display(20, 20, 650 - 40, 480 - 40, "Checkout Summary");
+	Fl_Text_Display *disp = new Fl_Text_Display(20, 20, 650 - 140, 480 - 140, "Checkout Summary");
+
+	picimage = new Fl_JPEG_Image("full_orange_can.jpg");
+	picbox = new Fl_Box(600, 20, picimage->w(), picimage->h()); //Size best at 250 x 250 pixels
+	
+
+	
+
+	picbox->image(picimage);
+	picbox->redraw();
 	disp->buffer(buff);
 	win->show();
 
-	strcat(printRM, sRM->nameRMVec(i-1));
-	strcat(printRM, "\n");
-	strcat(printRM, sRM->nameHeadVecRM(i - 1));
-	strcat(printRM, "\n");
-	strcat(printRM, sRM->nameTorsoVecRM(i - 1));
-	strcat(printRM, "\n");
-	strcat(printRM, sRM->nameArmVecRM(i - 1));
-	strcat(printRM, "\n");
-	strcat(printRM, sRM->nameLocomotorVecRM(i - 1));
-	strcat(printRM, "\n");
-	strcat(printRM, sRM->nameBatteryVecRM(i - 1));
-	strcat(printRM, "\n\n");
+	strcat(printRM, "Model Name: ");
+	strcat(printRM, sRM->nameRMVec(i));
+	strcat(printRM, "\nHead Name: ");
+	strcat(printRM, sRM->nameHeadVecRM(i));
+	strcat(printRM, "\nTorso Name: ");
+	strcat(printRM, sRM->nameTorsoVecRM(i));
+	strcat(printRM, "\nArm Name: ");
+	strcat(printRM, sRM->nameArmVecRM(i));
+	strcat(printRM, "\nLocomotor Name: ");
+	strcat(printRM, sRM->nameLocomotorVecRM(i));
+	strcat(printRM, "\nBattery Name: ");
+	strcat(printRM, sRM->nameBatteryVecRM(i));
+	strcat(printRM, "\nTotal Weight: ");
 
+	string con = to_string(sRM->totalWeightVecRM(i));
+	char* con2 = new char[con.length() + 1];
+	strcpy(con2, con.c_str());
+
+	strcat(printRM, con2); //Weight
+	strcat(printRM, "\nTotal Cost: $");
+
+	con = to_string(sRM->totalCostVecRM(i));
+	con2 = new char[con.length() + 1];
+	strcpy(con2, con.c_str());
+
+	strcat(printRM, con2); //Cost
+
+	strcat(printRM, "\n\n");
+	
 	buff->text(printRM);
 
-
+	
 }
 
-void cata(Fl_Widget* w, void* p) {
+void  cata(Fl_Widget* w, void* p) {
 	winCata = new Fl_Window(600, 600, "Catalog");
 
 	winCata->begin();
-	brCata = new Fl_Hold_Browser(50, 50, 100, 500);
+	brCata = new Fl_Hold_Browser(50, 50, 100, 500, "Robot Models");
 
 	int i;
-	for (i = 0; i < sRM->size(); i++) {
+	for (i = 0; i < sRM->size(); i++){
 		brCata->add(sRM->nameRMVec(i));
 	}
+	if (sRM->size() > 0){
+		brCata->select(1);
+		Fl_Button *viewButton = new Fl_Button(450, 500, 100, 50, "View");
+		Fl_Button *buyButton = new Fl_Button(350, 500, 100, 50, "Purchase");
 
-	Fl_Button *viewButton = new Fl_Button(450, 500, 100, 50, "View");
-
-	viewButton->callback((Fl_Callback*)viewCatacb, (void*)brCata);
-
+		viewButton->callback((Fl_Callback*)viewcb, (void*)brCata);
+		buyButton->callback((Fl_Callback*)mkPurchase, (void*)brCata);
+	}
+	
 	winCata->end();
 	winCata->show();
 }
 
-void addCustomer(Fl_Widget* w, void* p) {
+void addSalesAs(Fl_Widget* w, void* p){
+	strcpy(printSalesAs, "");
+
+	char* resSA = new char[1000];
+	strcpy(resSA, "");
+	strcat(resSA, nameSalesAs->value());
+
+	char* resSAen = new char[1000];
+	strcpy(resSAen, "");
+	strcat(resSAen, empnumSalesAs->value());
+
+	SalesAs insertSA(resSA, resSAen);
+	lSA->get_SA(insertSA);
+
+
+	/*
+	Fl_Window *win = new Fl_Window(850, 480);
+	Fl_Text_Buffer *buff = new Fl_Text_Buffer();
+	Fl_Text_Display *disp = new Fl_Text_Display(20, 20, 650 - 40, 480 - 40, "Added Sales Associate");
+	disp->buffer(buff);
+	win->show();
+	int i;
+	for (i = 0; i < lSA->size(); i++){
+		strcat(printSalesAs, lSA->nameSalesAsVec(i));
+		strcat(printSalesAs, "\n");
+		strcat(printSalesAs, lSA->empnumSalesAsVec(i));
+		strcat(printSalesAs, "\n\n");
+	}
+	buff->text(printSalesAs);
+	*/
+	nameSalesAs->value("");
+	empnumSalesAs->value("");
+	lSA->hideSA();
+}
+
+void addCustomer(Fl_Widget* w, void* p){
 
 	char* resC = new char[1000];
 	strcpy(resC, "");
@@ -640,30 +1009,31 @@ void addCustomer(Fl_Widget* w, void* p) {
 	lC->get_customer(insertCustomer);
 
 
-
+	/*
 	Fl_Window *win = new Fl_Window(650, 480);
 	Fl_Text_Buffer *buff = new Fl_Text_Buffer();
-	Fl_Text_Display *disp = new Fl_Text_Display(20, 20, 650 - 40, 480 - 40, "Checkout Summary");
+	Fl_Text_Display *disp = new Fl_Text_Display(20, 20, 650 - 40, 480 - 40, "Show Customer");
 	disp->buffer(buff);
 	win->show();
 	int i;
-	for (i = 0; i < lC->size(); i++) {
+	for (i = 0; i < lC->size(); i++){
 		strcat(printCustomer, lC->nameCustomerVec(i));
 		strcat(printCustomer, "\n");
 	}
 	buff->text(printCustomer);
-
+	*/
 	nameCustomer->value("");
 	lC->hideC();
 }
 
-void addRM(Fl_Widget* w, void* p) {
+void addRM(Fl_Widget* w, void* p){
+	strcpy(printRM, "");
 
 	char* resRM = new char[1000];
 	strcpy(resRM, "");
 	strcat(resRM, nameRM->value());
 	string sresRM = resRM;
-
+	
 	if (sresRM.length() < 1)
 		strcpy(resRM, "Not Named");
 
@@ -689,8 +1059,11 @@ void addRM(Fl_Widget* w, void* p) {
 	strcpy(resB, "");
 	strcat(resB, nameBatteryRM->value());
 
+	double resW = atof(totalWeightRM->value());
+	double resC = atof(totalCostRM->value());
 
-	RobotModel insertRM(resRM, resH, resT, resA, resL, resB);
+
+	RobotModel insertRM(resRM, resH, resT, resA, resL, resB, resW, resC);
 	sRM->get_rm(insertRM);
 	Head insertHead(resH);
 	rH->get_head(insertHead);
@@ -704,14 +1077,14 @@ void addRM(Fl_Widget* w, void* p) {
 	rB->get_battery(insertBattery);
 
 
-
+	/*
 	Fl_Window *win = new Fl_Window(650, 480);
 	Fl_Text_Buffer *buff = new Fl_Text_Buffer();
 	Fl_Text_Display *disp = new Fl_Text_Display(20, 20, 650 - 40, 480 - 40, "Checkout Summary");
 	disp->buffer(buff);
 	win->show();
 	int i;
-	for (i = 0; i < sRM->size(); i++) {
+	for (i = 0; i < sRM->size(); i++){
 		strcat(printRM, sRM->nameRMVec(i));
 		strcat(printRM, "\n");
 		strcat(printRM, sRM->nameHeadVecRM(i));
@@ -723,37 +1096,53 @@ void addRM(Fl_Widget* w, void* p) {
 		strcat(printRM, sRM->nameLocomotorVecRM(i));
 		strcat(printRM, "\n");
 		strcat(printRM, sRM->nameBatteryVecRM(i));
+		strcat(printRM, "\n");
+
+		string con = to_string(sRM->totalWeightVecRM(i));
+		char* con2 = new char[con.length() + 1];
+		strcpy(con2, con.c_str());
+
+		strcat(printRM, con2); //Weight
+		strcat(printRM, "\n");
+
+		con = to_string(sRM->totalCostVecRM(i));
+		con2 = new char[con.length() + 1];
+		strcpy(con2, con.c_str());
+
+		strcat(printRM, con2); //Cost
 		strcat(printRM, "\n\n");
 	}
 	buff->text(printRM);
-
+	*/
 	nameRM->value("");
 	nameHeadRM->value("");
 	nameTorsoRM->value("");
 	nameArmRM->value("");
 	nameLocomotorRM->value("");
 	nameBatteryRM->value("");
+	totalWeightRM->value("");
+	totalCostRM->value("");
 	sRM->hideRM();
 }
 
-void addHead(Fl_Widget* w, void* p) {
-
+void addHead(Fl_Widget* w, void* p){
+	
 	char* res = new char[1000];
 	strcpy(res, "");
 	strcat(res, nameHead->value());
 
 	Head insertHead(res);
 	rH->get_head(insertHead);
-
-
+	
+	
 
 	Fl_Window *win = new Fl_Window(650, 480);
 	Fl_Text_Buffer *buff = new Fl_Text_Buffer();
-	Fl_Text_Display *disp = new Fl_Text_Display(20, 20, 650 - 40, 480 - 40, "Checkout Summary");
-	disp->buffer(buff);
-	win->show();
+	Fl_Text_Display *disp = new Fl_Text_Display(20, 20, 650 - 40, 480 - 40, "Heads");  
+	disp->buffer(buff);    
+	win->show();            
 	int i;
-	for (i = 0; i < rH->size(); i++) {
+	for (i = 0; i < rH->size(); i++){
 		strcat(printHead, rH->nameHeadVec(i));
 		strcat(printHead, "\n");
 	}
@@ -763,7 +1152,7 @@ void addHead(Fl_Widget* w, void* p) {
 	rH->hideH();
 }
 
-void addTorso(Fl_Widget* w, void* p) {
+void addTorso(Fl_Widget* w, void* p){
 
 	char* res = new char[1000];
 	strcpy(res, "");
@@ -776,11 +1165,11 @@ void addTorso(Fl_Widget* w, void* p) {
 
 	Fl_Window *win = new Fl_Window(650, 480);
 	Fl_Text_Buffer *buff = new Fl_Text_Buffer();
-	Fl_Text_Display *disp = new Fl_Text_Display(20, 20, 650 - 40, 480 - 40, "Checkout Summary");
+	Fl_Text_Display *disp = new Fl_Text_Display(20, 20, 650 - 40, 480 - 40, "Torsos");
 	disp->buffer(buff);
 	win->show();
 	int i;
-	for (i = 0; i < rT->size(); i++) {
+	for (i = 0; i < rT->size(); i++){
 		strcat(printTorso, rT->nameTorsoVec(i));
 		strcat(printTorso, "\n");
 	}
@@ -790,7 +1179,7 @@ void addTorso(Fl_Widget* w, void* p) {
 	rT->hideT();
 }
 
-void addArm(Fl_Widget* w, void* p) {
+void addArm(Fl_Widget* w, void* p){
 
 	char* res = new char[1000];
 	strcpy(res, "");
@@ -803,11 +1192,11 @@ void addArm(Fl_Widget* w, void* p) {
 
 	Fl_Window *win = new Fl_Window(650, 480);
 	Fl_Text_Buffer *buff = new Fl_Text_Buffer();
-	Fl_Text_Display *disp = new Fl_Text_Display(20, 20, 650 - 40, 480 - 40, "Checkout Summary");
+	Fl_Text_Display *disp = new Fl_Text_Display(20, 20, 650 - 40, 480 - 40, "Arms");
 	disp->buffer(buff);
 	win->show();
 	int i;
-	for (i = 0; i < rA->size(); i++) {
+	for (i = 0; i < rA->size(); i++){
 		strcat(printArm, rA->nameArmVec(i));
 		strcat(printArm, "\n");
 	}
@@ -817,7 +1206,7 @@ void addArm(Fl_Widget* w, void* p) {
 	rA->hideA();
 }
 
-void addLocomotor(Fl_Widget* w, void* p) {
+void addLocomotor(Fl_Widget* w, void* p){
 
 	char* res = new char[1000];
 	strcpy(res, "");
@@ -830,11 +1219,11 @@ void addLocomotor(Fl_Widget* w, void* p) {
 
 	Fl_Window *win = new Fl_Window(650, 480);
 	Fl_Text_Buffer *buff = new Fl_Text_Buffer();
-	Fl_Text_Display *disp = new Fl_Text_Display(20, 20, 650 - 40, 480 - 40, "Checkout Summary");
+	Fl_Text_Display *disp = new Fl_Text_Display(20, 20, 650 - 40, 480 - 40, "Locomotors");
 	disp->buffer(buff);
 	win->show();
 	int i;
-	for (i = 0; i < rL->size(); i++) {
+	for (i = 0; i < rL->size(); i++){
 		strcat(printLocomotor, rL->nameLocomotorVec(i));
 		strcat(printLocomotor, "\n");
 	}
@@ -844,7 +1233,7 @@ void addLocomotor(Fl_Widget* w, void* p) {
 	rL->hideL();
 }
 
-void addBattery(Fl_Widget* w, void* p) {
+void addBattery(Fl_Widget* w, void* p){
 
 	char* res = new char[1000];
 	strcpy(res, "");
@@ -857,11 +1246,11 @@ void addBattery(Fl_Widget* w, void* p) {
 
 	Fl_Window *win = new Fl_Window(650, 480);
 	Fl_Text_Buffer *buff = new Fl_Text_Buffer();
-	Fl_Text_Display *disp = new Fl_Text_Display(20, 20, 650 - 40, 480 - 40, "Checkout Summary");
+	Fl_Text_Display *disp = new Fl_Text_Display(20, 20, 650 - 40, 480 - 40, "Batteries");
 	disp->buffer(buff);
 	win->show();
 	int i;
-	for (i = 0; i < rB->size(); i++) {
+	for (i = 0; i < rB->size(); i++){
 		strcat(printBattery, rB->nameBatteryVec(i));
 		strcat(printBattery, "\n");
 	}
@@ -871,51 +1260,56 @@ void addBattery(Fl_Widget* w, void* p) {
 	rB->hideB();
 }
 
-void showCustomer(Fl_Widget* w, void* p) {
+void showSAs(Fl_Widget* w, void* p){
+	strcpy(printSalesAs, "");
+	lSA->showSA();
+}
+
+void showCustomer(Fl_Widget* w, void* p){
 	strcpy(printCustomer, "");
 	lC->showC();
 }
 
-void showRM(Fl_Widget* w, void* p) {
+void showRM(Fl_Widget* w, void* p){
 	strcpy(printRM, "");
 	sRM->showRM();
 }
 
-void showHead(Fl_Widget* w, void* p) {
+void showHead(Fl_Widget* w, void* p){
 	strcpy(printHead, "");
 	rH->showH();
 }
 
-void showTorso(Fl_Widget* w, void* p) {
+void showTorso(Fl_Widget* w, void* p){
 	strcpy(printTorso, "");
 	rT->showT();
 }
 
-void showArm(Fl_Widget* w, void* p) {
+void showArm(Fl_Widget* w, void* p){
 	strcpy(printArm, "");
 	rA->showA();
 }
 
-void showLocomotor(Fl_Widget* w, void* p) {
+void showLocomotor(Fl_Widget* w, void* p){
 	strcpy(printLocomotor, "");
 	rL->showL();
 }
 
-void showBattery(Fl_Widget* w, void* p) {
+void showBattery(Fl_Widget* w, void* p){
 	strcpy(printBattery, "");
 	rB->showB();
 }
 
 void createRP_cb(Fl_Widget* create, void* p) {
 
-
+	
 
 	Fl_Window* cRP = new Fl_Window(300, 650, "Create Robot Parts");
 
 	cRP->begin();
 
 	//Fl_Output* outt = new Fl_Output(50, 550, 200, 50, "out");
-
+	
 
 	Fl_Button* headb = new Fl_Button(50, 150, 200, 50, "Head");
 	headb->callback(showHead);
@@ -939,7 +1333,9 @@ void createRP_cb(Fl_Widget* create, void* p) {
 	cRP->show();
 }
 
-int main() {
+int main(){
+	lOrd = new listOrders;
+	lSA = new listSalesAs;
 	lC = new listCustomer();
 	sRM = new showRobotModel();
 	rH = new robotHead();
@@ -957,18 +1353,20 @@ int main() {
 	Fl_Window win(600, 400, "Hw6");
 
 	win.begin();
-
+	
 	Fl_Button createRP(50, 50, 150, 50, "Create Parts");
 	Fl_Button createD(50, 150, 150, 50, "Catalog");
-	Fl_Button createH(250, 50, 150, 50, "Create Head");
+	Fl_Button createH(250, 50, 150, 50, "Add Sales Associate");
 	Fl_Button createRM(250, 150, 150, 50, "Create Model");
 	Fl_Button createC(50, 250, 150, 50, "Add Customer");
+	Fl_Button createO(250, 250, 150, 50, "View Orders");
 	//createRM.callback(createHead_cb);
 	createRP.callback(createRP_cb);
 	createD.callback(cata);
-	createH.callback(showHead);
+	createH.callback(showSAs);
 	createRM.callback(showRM);
 	createC.callback(showCustomer);
+	createO.callback(listingOrders);
 	win.end();
 	win.show();
 	return (Fl::run());
